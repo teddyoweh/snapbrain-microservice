@@ -154,6 +154,7 @@ app.get('/', (req, res) => {
       return questions
  }
  async function getSessionInfo(sessionid) {
+    console.log(sessionid,"sessionid");
     try {
         const session = await SessionModel.findOne({ _id: sessionid });
         if (!session) {
