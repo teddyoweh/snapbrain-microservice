@@ -534,37 +534,26 @@ app.get('/images', (req, res) => {
     res.json({ images: pngFiles });
   });
 app.use('/public', express.static('./images'));
-
+const WebSocket = require('ws');
+const https = require('https');
+const http = require('http');
+const url = require('url');
 app.listen(PORT, () => {
-    const WebSocket = require('ws');
-    const https = require('https');
-    const http = require('http');
-    const url = require('url');
-    
-// Load SSL/TLS certificates
-// const options = {
-//     key: fs.readFileSync('server.key'), // Change to the path of your private key
-//     cert: fs.readFileSync('server.cert'), // Change to the path of your certificate
-//   };
   
-//   // Create an HTTPS server
-//   const server = https.createServer(options, app);
-  
-const server = http.createServer(app);
-  // Set up WebSocket Server
-  const wss = new WebSocket.Server({ server });
+   
+    const wss = new WebSocket.Server({ server:app });
     
     wss.on('connection', (ws, req) => {
       const userId = url.parse(req.url, true).query.userId;
       const sessionId = url.parse(req.url, true).query.sessionId;
       console.log(`User connected with ID: ${userId} to session ${sessionId}`);
-
+    
     
     
       ws.on('message', (message) => {
         console.log(`Received message from user ${userId}: ${ message}`);
         const { type, data } = JSON.parse(message);
-
+    
         if(type=="update_stat"){
             SessionModel.findByIdAndUpdate(sessionId, { stat: data.stat}, { new: true })
             .then((session) => {
@@ -596,10 +585,10 @@ const server = http.createServer(app);
     });
         }
       });
-   
+    
       const changeStream = SessionModel.watch({ fullDocument: 'updateLookup', filter: { '_id': sessionId } });
-
-
+    
+    
       changeStream.on('change', async (change) => {
          console.log("Change in session");
           
@@ -619,22 +608,22 @@ const server = http.createServer(app);
         }));
       });
       
-  const changeStream0 = leaderboardModel.watch({ fullDocument: 'updateLookup', filter: {sessionid: sessionId } });
-  changeStream0.on('change', async (change) => {
+    const changeStream0 = leaderboardModel.watch({ fullDocument: 'updateLookup', filter: {sessionid: sessionId } });
+    changeStream0.on('change', async (change) => {
     console.log("Change in leaderboard session");
     const leaderboard = await getLeaderboard(sessionId)
- 
+    
     ws.send(JSON.stringify({
         type: "update_leaderboard",
         data: {
             leaderboard
         },
     }));
-});
-const changeStreamx = SessionUserModel.watch({ fullDocument: 'updateLookup', filter: {sessionid: sessionId } });
-changeStreamx.on('change', async (change) => {
+    });
+    const changeStreamx = SessionUserModel.watch({ fullDocument: 'updateLookup', filter: {sessionid: sessionId } });
+    changeStreamx.on('change', async (change) => {
     console.log("Change in session");
-
+    
     try {
         const [newDoc, questions, usersessions, leaderboard, sessionInfo] = await Promise.all([
             SessionModel.findById(sessionId),
@@ -643,7 +632,7 @@ changeStreamx.on('change', async (change) => {
             getLeaderboard(sessionId),
             getSessionInfo(sessionId),
         ]);
-
+    
         console.log(newDoc.stat);
         ws.send(JSON.stringify({
             type: "update_sessionx",
@@ -664,25 +653,25 @@ changeStreamx.on('change', async (change) => {
     } catch (error) {
         console.error("Error processing change:", error);
     }
-});
- 
-  const changeStream1 = userAnswerModel.watch({ fullDocument: 'updateLookup', filter: {sessionid: sessionId,userid:userId } });
-
- 
- 
-  changeStream1.on('change', async (change) => {
+    });
+    
+    const changeStream1 = userAnswerModel.watch({ fullDocument: 'updateLookup', filter: {sessionid: sessionId,userid:userId } });
+    
+    
+    
+    changeStream1.on('change', async (change) => {
     console.log("Change in userAnswerModel session");
- 
+    
      const usersData = await userAnswerModel.find({
         sessionid: change.fullDocument.sessionid,
         questionid: change.fullDocument.questionid,
     });
-
+    
     const userIds = usersData.map(user => user.userid);
-
+    
     const userData = await userModel.find({ userid: { $in: userIds } });
-
- 
+    
+    
     const mergedUserData = userData.map(user => {
         const answerData = usersData.find(u => u.userid === user.userid);
         return {
@@ -699,7 +688,7 @@ changeStreamx.on('change', async (change) => {
     }
     
     console.log("this answer is",answer)
- 
+    
     ws.send(JSON.stringify({
         type: "update_answer",
         data: {
@@ -707,26 +696,16 @@ changeStreamx.on('change', async (change) => {
             usersData: mergedUserData
         },
     }));
-});
- 
+    });
+    
       ws.on('close', () => {
         console.log(`User with ID ${userId} disconnected`);
       });
     });
     
-    function broadcast(message, sender) {
-      wss.clients.forEach((client) => {
-        if (client !== sender && client.readyState === WebSocket.OPEN) {
-          client.send(message);
-        }
-      });
-    }
+ 
     
-    const port = 3050;
-    server.listen(port, () => {
-      console.log(`Server is listening on port ${port}`);
-    });
-    
+   
 
   console.log(`Server is running on port ${PORT}`);
 });
