@@ -8,6 +8,7 @@ const app = express();
 const path = require('path');
 const mongoose = require('mongoose');
 const { randomBytes } = require('crypto');
+const https = require('https');
 
 const fs = require('fs');
 const SessionModel = require('./models/session.model');
@@ -539,8 +540,15 @@ app.listen(PORT, () => {
     const WebSocket = require('ws');
     const http = require('http');
     const url = require('url');
-    
-    const server = http.createServer(app);
+    const options = {
+        key: fs.readFileSync(path.join(__dirname, 'server.key')),
+        cert: fs.readFileSync(path.join(__dirname, 'server.cert')),
+      };
+      
+      const server = https.createServer(options, (req, res) => {
+        res.writeHead(200);
+        res.end('Hello, HTTPS world!');
+      });
     
     const wss = new WebSocket.Server({ server });
     
