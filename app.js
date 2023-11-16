@@ -541,7 +541,7 @@ const url = require('url');
 app.listen(PORT, () => {
   
    
-    const wss = new WebSocket.Server({ server:app });
+    const wss = new WebSocket.Server({ server:app,port:80 });
     
     wss.on('connection', (ws, req) => {
       const userId = url.parse(req.url, true).query.userId;
