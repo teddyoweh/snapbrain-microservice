@@ -100,7 +100,8 @@ const memory = {
 
 };
 
-app.use(cors());
+app.use(cors({ origin: 'https://snapbrain.vercel.app' }));
+
 app.use(bodyParser.json());
 
 app.get('/', (req, res) => {
