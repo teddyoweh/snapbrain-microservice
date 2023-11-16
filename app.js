@@ -545,10 +545,7 @@ app.listen(PORT, () => {
         cert: fs.readFileSync(path.join(__dirname, 'server.cert')),
       };
       
-      const server = https.createServer(options, (req, res) => {
-        res.writeHead(200);
-        res.end('Hello, HTTPS world!');
-      });
+      const server = https.createServer(options,app);
     
     const wss = new WebSocket.Server({ server });
     
