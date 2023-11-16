@@ -537,12 +537,20 @@ app.use('/public', express.static('./images'));
 
 app.listen(PORT, () => {
     const WebSocket = require('ws');
-    const http = require('http');
+    const https = require('https');
     const url = require('url');
     
-    const server = http.createServer(app);
-    
-    const wss = new WebSocket.Server({ server });
+// Load SSL/TLS certificates
+const options = {
+    key: fs.readFileSync('server.key'), // Change to the path of your private key
+    cert: fs.readFileSync('server.cert'), // Change to the path of your certificate
+  };
+  
+  // Create an HTTPS server
+  const server = https.createServer(options, app);
+  
+  // Set up WebSocket Server
+  const wss = new WebSocket.Server({ server });
     
     wss.on('connection', (ws, req) => {
       const userId = url.parse(req.url, true).query.userId;
