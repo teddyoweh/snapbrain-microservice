@@ -552,7 +552,7 @@ app.listen(PORT, () => {
   
 const server = http.createServer(app);
   // Set up WebSocket Server
-  const wss = new WebSocket.Server({ app });
+  const wss = new WebSocket.Server({ server });
     
     wss.on('connection', (ws, req) => {
       const userId = url.parse(req.url, true).query.userId;
