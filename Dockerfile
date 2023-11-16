@@ -6,4 +6,5 @@ COPY . .
 EXPOSE 3030
 EXPOSE 3050
 ENV WS_PORT 3050
+EXPOSE 443
 CMD ["npm", "run", "dev"]
